@@ -2,32 +2,134 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gerar ZIP com Estrutura</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
   <style>
-    body { font-family: Arial; padding: 20px; }
-    fieldset { margin-bottom: 15px; }
-    label { display: block; margin-top: 5px; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      background-color: #f4f7f6;
+      color: #333;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    h2, h3 {
+      color: #2c3e50;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 10px;
+      margin-top: 30px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #34495e;
+    }
+
+    input[type="number"],
+    input[type="file"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: calc(100% - 22px); /* Account for padding and border */
+      box-sizing: border-box;
+      margin-bottom: 10px;
+      background-color: #fff;
+    }
+
+    input[type="file"] {
+      cursor: pointer;
+    }
+
+    input[type="number"]:focus,
+    input[type="file"]:focus,
+    button:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+    }
+
+    fieldset {
+      border: 1px solid #dcdcdc;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 25px;
+      background-color: #ffffff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    legend {
+      font-weight: bold;
+      color: #3498db;
+      padding: 0 10px;
+      border-bottom: none;
+    }
+
+    button {
+      background-color: #28a745;
+      color: white;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1.1em;
+      margin-top: 20px;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #218838;
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      background-color: #1e7e34;
+      transform: translateY(0);
+    }
+
+    #loadingMessage {
+      margin-top: 15px;
+      font-weight: bold;
+      color: #3498db;
+      display: none; /* Hidden by default */
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 15px;
+      }
+      input[type="number"],
+      input[type="file"] {
+        width: calc(100% - 20px);
+      }
+      button {
+        width: 100%;
+        padding: 15px;
+      }
+    }
   </style>
 </head>
 <body>
 
   <h2>Gerar Relatório ZIP com Imagens</h2>
 
-  <label>Quantidade de QDCs:
-    <input type="number" id="qtdQDCs" value="1" min="1" onchange="gerarCamposQDCs()">
-  </label>
+  <label for="qtdQDCs">Quantidade de QDCs:</label>
+  <input type="number" id="qtdQDCs" value="1" min="1" onchange="gerarCamposQDCs()">
   <div id="qdcContainer"></div>
 
-  <label>Quantidade de Postes:
-    <input type="number" id="qtdPostes" value="1" min="1" onchange="gerarCamposPostes()">
-  </label>
+  <label for="qtdPostes">Quantidade de Postes:</label>
+  <input type="number" id="qtdPostes" value="1" min="1" onchange="gerarCamposPostes()">
   <div id="postesContainer"></div>
 
   <h3>Centro de Monitoramento</h3>
   <div id="cmContainer"></div>
 
   <button onclick="gerarZip()">Gerar ZIP</button>
+  <div id="loadingMessage">Gerando ZIP, por favor aguarde...</div>
 
   <script>
     function gerarCamposQDCs() {
@@ -38,7 +140,8 @@
         container.innerHTML += `
           <fieldset>
             <legend>QDC ${i}</legend>
-            <label>Imagem: <input type="file" accept="image/*" capture="environment" id="qdc${i}"></label>
+            <label for="qdc${i}">Imagem:</label>
+            <input type="file" accept="image/*" capture="environment" id="qdc${i}">
           </fieldset>`;
       }
     }
@@ -51,10 +154,14 @@
         container.innerHTML += `
           <fieldset>
             <legend>Poste ${i}</legend>
-            <label>Acabamento 1: <input type="file" accept="image/*" capture="environment" id="poste${i}_acab1"></label>
-            <label>Acabamento 2: <input type="file" accept="image/*" capture="environment" id="poste${i}_acab2"></label>
-            <label>Acabamento 3: <input type="file" accept="image/*" capture="environment" id="poste${i}_acab3"></label>
-            <label>Caixa de Passagem: <input type="file" accept="image/*" capture="environment" id="poste${i}_caixa"></label>
+            <label for="poste${i}_acab1">Acabamento 1:</label>
+            <input type="file" accept="image/*" capture="environment" id="poste${i}_acab1">
+            <label for="poste${i}_acab2">Acabamento 2:</label>
+            <input type="file" accept="image/*" capture="environment" id="poste${i}_acab2">
+            <label for="poste${i}_acab3">Acabamento 3:</label>
+            <input type="file" accept="image/*" capture="environment" id="poste${i}_acab3">
+            <label for="poste${i}_caixa">Caixa de Passagem:</label>
+            <input type="file" accept="image/*" capture="environment" id="poste${i}_caixa">
           </fieldset>`;
       }
     }
@@ -64,14 +171,21 @@
       container.innerHTML = `
         <fieldset>
           <legend>Centro de Monitoramento</legend>
-          <label>Montagem do Rack (3 fotos): <input type="file" accept="image/*" capture="environment" id="rackCM" multiple></label>
-          <label>Infraestrutura Interna (2 fotos): <input type="file" accept="image/*" capture="environment" id="infraCM" multiple></label>
-          <label>Central de Alarme (1 foto): <input type="file" accept="image/*" capture="environment" id="alarmeCM"></label>
-          <label>Câmera CM (1 foto): <input type="file" accept="image/*" capture="environment" id="cameraCM"></label>
+          <label for="rackCM">Montagem do Rack (3 fotos):</label>
+          <input type="file" accept="image/*" capture="environment" id="rackCM" multiple>
+          <label for="infraCM">Infraestrutura Interna (2 fotos):</label>
+          <input type="file" accept="image/*" capture="environment" id="infraCM" multiple>
+          <label for="alarmeCM">Central de Alarme (1 foto):</label>
+          <input type="file" accept="image/*" capture="environment" id="alarmeCM">
+          <label for="cameraCM">Câmera CM (1 foto):</label>
+          <input type="file" accept="image/*" capture="environment" id="cameraCM">
         </fieldset>`;
     }
 
     async function gerarZip() {
+      const loadingMessage = document.getElementById('loadingMessage');
+      loadingMessage.style.display = 'block'; // Show loading message
+
       const zip = new JSZip();
 
       // QDCs
@@ -124,15 +238,17 @@
         zip.file(`CENTRO_MONITORAMENTO/Infraestrutura_${i + 1}.${ext}`, blob);
       }
 
-      const alarme = document.getElementById('alarmeCM').files[0];
-      if (alarme) {
+      const alarmeInput = document.getElementById('alarmeCM');
+      if (alarmeInput && alarmeInput.files.length > 0) {
+        const alarme = alarmeInput.files[0];
         const blob = await alarme.arrayBuffer();
         const ext = alarme.name.split('.').pop();
         zip.file(`CENTRO_MONITORAMENTO/Central_Alarme.${ext}`, blob);
       }
 
-      const camera = document.getElementById('cameraCM').files[0];
-      if (camera) {
+      const cameraInput = document.getElementById('cameraCM');
+      if (cameraInput && cameraInput.files.length > 0) {
+        const camera = cameraInput.files[0];
         const blob = await camera.arrayBuffer();
         const ext = camera.name.split('.').pop();
         zip.file(`CENTRO_MONITORAMENTO/Camera_CM.${ext}`, blob);
@@ -143,7 +259,11 @@
       const link = document.createElement("a");
       link.href = URL.createObjectURL(content);
       link.download = "relatorio.zip";
+      document.body.appendChild(link); // Append to body to ensure it's in the DOM
       link.click();
+      document.body.removeChild(link); // Clean up the element
+
+      loadingMessage.style.display = 'none'; // Hide loading message
     }
 
     // Inicialização
