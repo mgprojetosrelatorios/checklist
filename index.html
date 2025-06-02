@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerar ZIP com Estrutura</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    fieldset { margin-bottom: 15px; }
+    label { display: block; margin-top: 5px; }
+  </style>
+</head>
+<body>
+
+  <h2>Gerar Relatório ZIP com Imagens</h2>
+
+  <label>Quantidade de QDCs:
+    <input type="number" id="qtdQDCs" value="1" min="1" onchange="gerarCamposQDCs()">
+  </label>
+  <div id="qdcContainer"></div>
+
+  <label>Quantidade de Postes:
+    <input type="number" id="qtdPostes" value="1" min="1" onchange="gerarCamposPostes()">
+  </label>
+  <div id="postesContainer"></div>
+
+  <h3>Centro de Monitoramento</h3>
+  <div id="cmContainer"></div>
+
+  <button onclick="gerarZip()">Gerar ZIP</button>
+
+  <script>
+    function gerarCamposQDCs() {
+      const qtd = parseInt(document.getElementById('qtdQDCs').value);
+      const container = document.getElementById('qdcContainer');
+      container.innerHTML = '';
+      for (let i = 1; i <= qtd; i++) {
+        container.innerHTML += `
+          <fieldset>
+            <legend>QDC ${i}</legend>
+            <label>Imagem: <input type="file" accept="image/*" capture="environment" id="qdc${i}"></label>
+          </fieldset>`;
+      }
+    }
+
+    function gerarCamposPostes() {
+      const qtd = parseInt(document.getElementById('qtdPostes').value);
+      const container = document.getElementById('postesContainer');
+      container.innerHTML = '';
+      for (let i = 1; i <= qtd; i++) {
+        container.innerHTML += `
+          <fieldset>
+            <legend>Poste ${i}</legend>
+            <label>Acabamento 1: <input type="file" accept="image/*" capture="environment" id="poste${i}_acab1"></label>
+            <label>Acabamento 2: <input type="file" accept="image/*" capture="environment" id="poste${i}_acab2"></label>
+            <label>Acabamento 3: <input type="file" accept="image/*" capture="environment" id="poste${i}_acab3"></label>
+            <label>Caixa de Passagem: <input type="file" accept="image/*" capture="environment" id="poste${i}_caixa"></label>
+          </fieldset>`;
+      }
+    }
+
+    function gerarCamposCM() {
+      const container = document.getElementById('cmContainer');
+      container.innerHTML = `
+        <fieldset>
+          <legend>Centro de Monitoramento</legend>
+          <label>Montagem do Rack (3 fotos): <input type="file" accept="image/*" capture="environment" id="rackCM" multiple></label>
+          <label>Infraestrutura Interna (2 fotos): <input type="file" accept="image/*" capture="environment" id="infraCM" multiple></label>
+          <label>Central de Alarme (1 foto): <input type="file" accept="image/*" capture="environment" id="alarmeCM"></label>
+          <label>Câmera CM (1 foto): <input type="file" accept="image/*" capture="environment" id="cameraCM"></label>
+        </fieldset>`;
+    }
+
+    async function gerarZip() {
+      const zip = new JSZip();
+
+      // QDCs
+      const qtdQDCs = parseInt(document.getElementById('qtdQDCs').value);
+      for (let i = 1; i <= qtdQDCs; i++) {
+        const fileInput = document.getElementById(`qdc${i}`);
+        if (fileInput && fileInput.files.length > 0) {
+          const file = fileInput.files[0];
+          const blob = await file.arrayBuffer();
+          const ext = file.name.split('.').pop();
+          zip.file(`QDCs/QDC_${i}.${ext}`, blob);
+        }
+      }
+
+      // POSTES
+      const qtdPostes = parseInt(document.getElementById('qtdPostes').value);
+      for (let i = 1; i <= qtdPostes; i++) {
+        for (let j = 1; j <= 3; j++) {
+          const fileInput = document.getElementById(`poste${i}_acab${j}`);
+          if (fileInput && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const blob = await file.arrayBuffer();
+            const ext = file.name.split('.').pop();
+            zip.file(`POSTES/Poste_${i}_Acabamento_${j}.${ext}`, blob);
+          }
+        }
+        const caixaInput = document.getElementById(`poste${i}_caixa`);
+        if (caixaInput && caixaInput.files.length > 0) {
+          const file = caixaInput.files[0];
+          const blob = await file.arrayBuffer();
+          const ext = file.name.split('.').pop();
+          zip.file(`POSTES/Poste_${i}_Caixa_Passagem.${ext}`, blob);
+        }
+      }
+
+      // CENTRO DE MONITORAMENTO
+      const rackFiles = document.getElementById('rackCM').files;
+      for (let i = 0; i < Math.min(rackFiles.length, 3); i++) {
+        const file = rackFiles[i];
+        const blob = await file.arrayBuffer();
+        const ext = file.name.split('.').pop();
+        zip.file(`CENTRO_MONITORAMENTO/Rack_${i + 1}.${ext}`, blob);
+      }
+
+      const infraFiles = document.getElementById('infraCM').files;
+      for (let i = 0; i < Math.min(infraFiles.length, 2); i++) {
+        const file = infraFiles[i];
+        const blob = await file.arrayBuffer();
+        const ext = file.name.split('.').pop();
+        zip.file(`CENTRO_MONITORAMENTO/Infraestrutura_${i + 1}.${ext}`, blob);
+      }
+
+      const alarme = document.getElementById('alarmeCM').files[0];
+      if (alarme) {
+        const blob = await alarme.arrayBuffer();
+        const ext = alarme.name.split('.').pop();
+        zip.file(`CENTRO_MONITORAMENTO/Central_Alarme.${ext}`, blob);
+      }
+
+      const camera = document.getElementById('cameraCM').files[0];
+      if (camera) {
+        const blob = await camera.arrayBuffer();
+        const ext = camera.name.split('.').pop();
+        zip.file(`CENTRO_MONITORAMENTO/Camera_CM.${ext}`, blob);
+      }
+
+      // Gerar e baixar o zip
+      const content = await zip.generateAsync({ type: "blob" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(content);
+      link.download = "relatorio.zip";
+      link.click();
+    }
+
+    // Inicialização
+    gerarCamposQDCs();
+    gerarCamposPostes();
+    gerarCamposCM();
+  </script>
+
+</body>
+</html>
