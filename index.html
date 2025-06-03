@@ -117,12 +117,14 @@
 
   <h2>Gerar Relatório ZIP com Imagens</h2>
 
-  <label for="qtdQDCs">Quantidade de QDCs:</label>
-  <input type="number" id="qtdQDCs" value="1" min="1" onchange="gerarCamposQDCs()">
+  <!-- <label for="qtdQDCs">Quantidade de QDCs:</label>
+  <input type="number" id="qtdQDCs" value="1" min="1" onchange="gerarCamposQDCs()"> -->
+  <h3>Quadros de Comunicação</h3>
   <div id="qdcContainer"></div>
 
-  <label for="qtdPostes">Quantidade de Postes:</label>
-  <input type="number" id="qtdPostes" value="1" min="1" onchange="gerarCamposPostes()">
+  <!-- <label for="qtdPostes">Quantidade de Postes:</label>
+  <input type="number" id="qtdPostes" value="1" min="1" onchange="gerarCamposPostes()"> -->
+  <h3>Postes</h3>
   <div id="postesContainer"></div>
 
   <h3>Centro de Monitoramento</h3>
@@ -132,8 +134,12 @@
   <div id="loadingMessage">Gerando ZIP, por favor aguarde...</div>
 
   <script>
+
+    const NUM_QDCS = 1;
+    const NUM_POSTES = 1;
+
     function gerarCamposQDCs() {
-      const qtd = parseInt(document.getElementById('qtdQDCs').value);
+      const qtd = NUM_QDCS//parseInt(document.getElementById('qtdQDCs').value);
       const container = document.getElementById('qdcContainer');
       container.innerHTML = '';
       for (let i = 1; i <= qtd; i++) {
@@ -147,7 +153,7 @@
     }
 
     function gerarCamposPostes() {
-      const qtd = parseInt(document.getElementById('qtdPostes').value);
+      const qtd = NUM_POSTES //parseInt(document.getElementById('qtdPostes').value);
       const container = document.getElementById('postesContainer');
       container.innerHTML = '';
       for (let i = 1; i <= qtd; i++) {
@@ -171,16 +177,30 @@
       container.innerHTML = `
         <fieldset>
           <legend>Centro de Monitoramento</legend>
-          <label for="rackCM">Montagem do Rack (3 fotos):</label>
-          <input type="file" accept="image/*" capture="environment" id="rackCM" multiple>
-          <label for="infraCM">Infraestrutura Interna (2 fotos):</label>
-          <input type="file" accept="image/*" capture="environment" id="infraCM" multiple>
-          <label for="alarmeCM">Central de Alarme (1 foto):</label>
-          <input type="file" accept="image/*" capture="environment" id="alarmeCM">
-          <label for="cameraCM">Câmera CM (1 foto):</label>
-          <input type="file" accept="image/*" capture="environment" id="cameraCM">
+
+          <label for="rackCM1">Montagem do Rack - Foto 1:</label>
+          <input type="file" accept="image/*" id="rackCM1">
+
+          <label for="rackCM2">Montagem do Rack - Foto 2:</label>
+          <input type="file" accept="image/*" id="rackCM2">
+
+          <label for="rackCM3">Montagem do Rack - Foto 3:</label>
+          <input type="file" accept="image/*" id="rackCM3">
+
+          <label for="infraCM1">Infraestrutura Interna - Foto 1:</label>
+          <input type="file" accept="image/*" id="infraCM1">
+
+          <label for="infraCM2">Infraestrutura Interna - Foto 2:</label>
+          <input type="file" accept="image/*" id="infraCM2">
+
+          <label for="alarmeCM">Central de Alarme:</label>
+          <input type="file" accept="image/*" id="alarmeCM">
+
+          <label for="cameraCM">Câmera CM:</label>
+          <input type="file" accept="image/*" id="cameraCM">
         </fieldset>`;
     }
+
 
     async function gerarZip() {
       const loadingMessage = document.getElementById('loadingMessage');
@@ -189,7 +209,7 @@
       const zip = new JSZip();
 
       // QDCs
-      const qtdQDCs = parseInt(document.getElementById('qtdQDCs').value);
+      const qtdQDCs = NUM_QDCS// parseInt(document.getElementById('qtdQDCs').value);
       for (let i = 1; i <= qtdQDCs; i++) {
         const fileInput = document.getElementById(`qdc${i}`);
         if (fileInput && fileInput.files.length > 0) {
@@ -201,7 +221,7 @@
       }
 
       // POSTES
-      const qtdPostes = parseInt(document.getElementById('qtdPostes').value);
+      const qtdPostes = NUM_POSTES//parseInt(document.getElementById('qtdPostes').value);
       for (let i = 1; i <= qtdPostes; i++) {
         for (let j = 1; j <= 3; j++) {
           const fileInput = document.getElementById(`poste${i}_acab${j}`);
@@ -222,37 +242,42 @@
       }
 
       // CENTRO DE MONITORAMENTO
-      const rackFiles = document.getElementById('rackCM').files;
-      for (let i = 0; i < Math.min(rackFiles.length, 3); i++) {
-        const file = rackFiles[i];
-        const blob = await file.arrayBuffer();
-        const ext = file.name.split('.').pop();
-        zip.file(`CENTRO_MONITORAMENTO/Rack_${i + 1}.${ext}`, blob);
+      for (let i = 1; i <= 3; i++) {
+        const input = document.getElementById(`rackCM${i}`);
+        if (input && input.files.length > 0) {
+          const file = input.files[0];
+          const blob = await file.arrayBuffer();
+          const ext = file.name.split('.').pop();
+          zip.file(`CENTRO_MONITORAMENTO/Rack_${i}.${ext}`, blob);
+        }
       }
 
-      const infraFiles = document.getElementById('infraCM').files;
-      for (let i = 0; i < Math.min(infraFiles.length, 2); i++) {
-        const file = infraFiles[i];
-        const blob = await file.arrayBuffer();
-        const ext = file.name.split('.').pop();
-        zip.file(`CENTRO_MONITORAMENTO/Infraestrutura_${i + 1}.${ext}`, blob);
+      for (let i = 1; i <= 2; i++) {
+        const input = document.getElementById(`infraCM${i}`);
+        if (input && input.files.length > 0) {
+          const file = input.files[0];
+          const blob = await file.arrayBuffer();
+          const ext = file.name.split('.').pop();
+          zip.file(`CENTRO_MONITORAMENTO/Infraestrutura_${i}.${ext}`, blob);
+        }
       }
 
       const alarmeInput = document.getElementById('alarmeCM');
       if (alarmeInput && alarmeInput.files.length > 0) {
-        const alarme = alarmeInput.files[0];
-        const blob = await alarme.arrayBuffer();
-        const ext = alarme.name.split('.').pop();
+        const file = alarmeInput.files[0];
+        const blob = await file.arrayBuffer();
+        const ext = file.name.split('.').pop();
         zip.file(`CENTRO_MONITORAMENTO/Central_Alarme.${ext}`, blob);
       }
 
       const cameraInput = document.getElementById('cameraCM');
       if (cameraInput && cameraInput.files.length > 0) {
-        const camera = cameraInput.files[0];
-        const blob = await camera.arrayBuffer();
-        const ext = camera.name.split('.').pop();
+        const file = cameraInput.files[0];
+        const blob = await file.arrayBuffer();
+        const ext = file.name.split('.').pop();
         zip.file(`CENTRO_MONITORAMENTO/Camera_CM.${ext}`, blob);
       }
+
 
       // Gerar e baixar o zip
       const content = await zip.generateAsync({ type: "blob" });
